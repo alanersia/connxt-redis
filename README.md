@@ -2,6 +2,15 @@
 
 Native synchronous Redis TCP client. It does not use a Redis client library.
 
+Add it to your project:
+
+```toml
+[dependencies]
+connxt-redis = "0.1"
+```
+
+The crate is available under the [MIT License](LICENSE).
+
 ```bash
 REDIS_TEST_URL='redis://:dev@127.0.0.1:6379/0' cargo run --example ping
 ```

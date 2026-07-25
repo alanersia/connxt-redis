@@ -2,6 +2,12 @@
 name = "connxt-redis"
 version = "0.1.0"
 edition = "2024"
+description = "A native synchronous and asynchronous Redis TCP client"
+license = "MIT"
+repository = "https://github.com/alanersia/connxt-redis"
+readme = "README.md"
+keywords = ["redis", "redis-client", "resp", "async", "tls"]
+categories = ["database-implementations"]
 
 [features]
 default = []

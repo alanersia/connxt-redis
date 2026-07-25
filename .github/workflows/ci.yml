@@ -1,0 +1,24 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        redis: [6, 7]
+    services:
+      redis:
+        image: redis:${{ matrix.redis }}
+        ports: [6379:6379]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with: { toolchain: stable }
+      - run: cargo fmt --check
+      - run: cargo test --all-features
+        env: { REDIS_TEST_URL: redis://127.0.0.1:6379/0 }
+      - run: cargo clippy --all-targets --all-features -- -D warnings
+      - run: cargo build --examples --all-features

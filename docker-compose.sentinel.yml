@@ -1,0 +1,27 @@
+services:
+  redis-master:
+    image: redis:7
+    command: ["redis-server", "--requirepass", "dev", "--masterauth", "dev"]
+    ports: ["6390:6379"]
+    networks: { sentinel_net: { ipv4_address: 172.30.0.2 } }
+    healthcheck: { test: ["CMD", "redis-cli", "-a", "dev", "ping"], interval: 2s, timeout: 2s, retries: 20 }
+  redis-replica:
+    image: redis:7
+    command: ["redis-server", "--replicaof", "redis-master", "6379", "--requirepass", "dev", "--masterauth", "dev"]
+    depends_on: { redis-master: { condition: service_healthy } }
+    healthcheck: { test: ["CMD", "redis-cli", "-a", "dev", "ping"], interval: 2s, timeout: 2s, retries: 20 }
+    networks: { sentinel_net: { ipv4_address: 172.30.0.3 } }
+  sentinel:
+    image: redis:7
+    command: ["sh", "-c", "until redis-cli -h redis-master -a dev ping >/dev/null 2>&1; do sleep 1; done; exec redis-server /etc/redis/sentinel.conf --sentinel"]
+    volumes: ["./sentinel.conf:/etc/redis/sentinel.conf"]
+    depends_on:
+      redis-master: { condition: service_healthy }
+      redis-replica: { condition: service_healthy }
+    ports: ["26379:26379"]
+    networks: { sentinel_net: { ipv4_address: 172.30.0.4 } }
+
+networks:
+  sentinel_net:
+    ipam:
+      config: [{ subnet: 172.30.0.0/24 }]
